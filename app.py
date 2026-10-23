@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 from supabase import create_client
 from db import run_select
+from rag import retrieve_context, generate_sql
 
 st.set_page_config(page_title="IDS 706 SQL Quiz", page_icon="🗄️", layout="wide")
 st.title("🗄️ SQL Quiz — Online Store")
@@ -63,6 +64,37 @@ def load_saved_answers(token, user_id):
     response.raise_for_status()
     return {item["question_id"]: item["sql_answer"] for item in response.json()}
 
+st.divider()
+st.header("RAG-Powered Text-to-SQL")
+
+question = st.text_input(
+    "Ask a question about the store database",
+    key="rag_question",
+)
+
+if st.button("Generate SQL", type="primary", key="rag_generate"):
+    if not question.strip():
+        st.warning("Enter a question first.")
+    else:
+        try:
+            context = retrieve_context(question)
+            sql = generate_sql(
+                question,
+                context,
+                st.secrets["openai_api_key"],
+            )
+            st.session_state["rag_context"] = context
+            st.session_state["rag_sql"] = sql
+        except Exception as exc:
+            st.error(f"Could not generate SQL: {exc}")
+
+if st.session_state.get("rag_context"):
+    with st.expander("Retrieved context"):
+        for document in st.session_state["rag_context"]:
+            st.write(document)
+
+if st.session_state.get("rag_sql"):
+    st.code(st.session_state["rag_sql"], language="sql")
 
 user = verified_user()
 if user is None:
