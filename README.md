@@ -51,7 +51,7 @@ You will need Python 3.12, a Supabase project, and an OpenAI API key.
    python -m pip install -r requirements.txt
    ```
 
-   On Windows, activate the environment with `.venv\\Scripts\\activate`.
+   On Windows PowerShell, activate it with `.venv\\Scripts\\Activate.ps1`. In Command Prompt, use `.venv\\Scripts\\activate.bat`.
 
 3. Copy the example secrets file and add your own credentials:
 
